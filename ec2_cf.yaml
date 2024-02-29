@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'EC2 Spot Instance with Ubuntu'
+
+Parameters:
+  InstanceTypeParameter:
+    Type: String
+    Default: t4g.nano
+    Description: Enter instance type.
+
+Resources:
+  GraphInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceTypeParameter
+      IamInstanceProfile: !Ref GraphInstanceProfile
+      AvailabilityZone: us-east-1d
+      ImageId: ami-05d47d29a4c2d19e1  # Ubuntu Server 22.04
+      KeyName: graphDbVirginia
+      SecurityGroups: [!Ref 'InstanceSecurityGroup']
+
+  GraphInstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      Path: "/"
+      Roles:
+        - S3Ec2Access
+
+  InstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Enable SSH access'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0  # Allow SSH access from any IP.
+
+Outputs:
+  InstanceIP:
+    Description: 'IP address of the instance'
+    Value: !GetAtt GraphInstance.PublicIp
+    Export:
+      Name: !Sub 'InstanceId-${AWS::StackName}'
+# Stack name GraphInstanceStack
