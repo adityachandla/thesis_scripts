@@ -12,15 +12,16 @@ class CfUtil:
         with open(name, "r") as f:
             return f.read()
 
-    def create_instance_stack(client) -> str:
+    def create_instance_stack(self) -> str:
         instance_parameter = dict()
         instance_parameter["ParameterKey"] = "InstanceTypeParameter"
         instance_parameter["ParameterValue"] = instance_type
 
-        response = client.create_stack(StackName=stack_name, 
+        response = self.client.create_stack(StackName=stack_name, 
                                        Parameters=[instance_parameter],
                                        TemplateBody=self.read_file(cf_stack_file),
                                        Capabilities=["CAPABILITY_IAM"])
+        print(f"started stack creation with StackID:{response['StackId']}")
         return response['StackId']
 
     def await_stack_creation(self):
@@ -33,7 +34,9 @@ class CfUtil:
 
     def delete_instance_stack(self):
         self.client.delete_stack(StackName=stack_name)
+        print("Triggered deletion")
 
     def await_stack_deletion(self):
         waiter = self.client.get_waiter("stack_delete_complete")
         waiter.wait(StackName=stack_name)
+        print("Stack deleted")
