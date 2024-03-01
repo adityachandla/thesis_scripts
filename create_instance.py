@@ -1,70 +1,72 @@
 import time
-import os
-from cfUtill import CfUtil
+import argparse
+
+import buildUtil
+from cfUtil import CfUtil
 from sshUtil import SshUtil
 
 access_dir = "../graph_access_service"
 algorithm_dir = "../graph_algorithm_service"
 
-bucket10 = "s3graphtest10oz--use1-az6--x-s3"
-bucket1 = "s3graphtest1oz--use1-az6--x-s3"
+general_buckets = {
+        "bucket1": "s3graphtest1",
+        "bucket10": "s3graphtest10"
+        }
 
-scp_prefix = "scp -o StrictHostKeyChecking=accept-new"
+onezone_buckets = {
+        "bucket1": "s3graphtest1oz--use1-az6--x-s3",
+        "bucket10": "s3graphtest10oz--use1-az6--x-s3"
+        }
 
-def copy_to_server(ip:str, path_to_copy: str):
-    os.system(f"{scp_prefix} -i {ssh_key} {path_to_copy} ubuntu@{ip}:~/")
+scaling_factors = ["1", "10"]
 
-def build_graph_access():
-    os.system("rm -f {access_dir}/access")
-    os.system(f"(cd {access_dir} && GOARCH=arm64  make access)")
-    os.system(f"mv {access_dir}/access .")
-
-def copy_access_files(ip: str):
-    copy_to_server(ip, "./access")
-
-def build_graph_algorithm():
-    os.system("rm -f {algorithm_dir}/algo")
-    os.system(f"(cd {algorithm_dir} && GOARCH=arm64 make algo)")
-    os.system(f"mv {algorithm_dir}/algo .")
-
-def copy_algorithm_files(ip: str):
-    copy_to_server(ip, "./algo")
-    files = ["run_variations_s3.sh", "*.csv","queries.txt"]
-    for file in files:
-        copy_to_server(ip, f"{algorithm_dir}/{file}")
-
-def copy_results(ip: str):
-    os.system(f"{scp_prefix} -i {ssh_key} ubuntu@{ip}:{path_to_copy} .")
-
-def main():
-    cf = CfUtil()
-    cf.create_instance_stack(cf_client)
-
-    cf.await_stack_creation(cf_client)
-
-    ip = cf.get_ip_address(cf_client)
-    print(f"Created instance with IP: {ip}")
-
+def run_tests(ip: str, buckets: dict[str, str]):
     # Build and copy the binaries.
-    build_graph_access()
-    build_graph_algorithm()
+    buildUitl.build_graph_access()
+    buildUitl.build_graph_algorithm()
     print("Built binaries for graph access and algorithm service")
 
-    copy_access_files(ip)
-    copy_algorithm_files(ip)
+    buildUtil.copy_access_files(ip)
+    buildUtil.copy_algorithm_files(ip)
     print("Copied required files to the destination")
 
     ssh = SshUtil(ip)
-    pid = ssh.run_access_service(ssh, bucket10)
-    time.sleep(2)
-    ssh.run_algorithm_service("10")
-    ssh.kill_access_service( pid)
+    for sf in scaling_factors:
+        pid = ssh.run_access_service(ssh, buckets["bucket" + sf], args.accessor)
+        time.sleep(2)
+        ssh.run_algorithm_service(sf)
+        ssh.kill_access_service(pid)
+
     ssh.close()
 
-    copy_results(ip)
+def main():
+    parser = argparse.ArgumentParser(prog='BenchmarkScript', 
+                                     description="Creates benchmarks")
+    parser.add_argument('-b', '--bucket-type', choices=["general", "onezone"])
+    parser.add_argument('-a', '--accessor', choices=["prefetch", "offset", "simple"])
+    parser.add_argument('-d', '--directory')
 
-    cf.delete_instance_stack(cf_client)
-    cf.await_stack_deletion(cf_client)
+    args = parser.parse_args()
+    if args.bucket_type == 'general':
+        print("Using general buckets")
+        buckets = general_buckets
+    else:
+        print("Using OneZone buckets")
+        buckets = onezone_buckets
+    cf = CfUtil()
+
+    if not cf.stack_exists()
+        cf.create_instance_stack()
+        cf.await_stack_creation()
+
+    ip = cf.get_ip_address()
+    print(f"Created instance with IP: {ip}")
+
+    run_tests(ip, buckets)
+    buildUtil.copy_results(ip, dir)
+
+    cf.delete_instance_stack()
+    cf.await_stack_deletion()
 
 if __name__ == "__main__":
     main()

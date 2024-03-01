@@ -28,9 +28,18 @@ class CfUtil:
         waiter = self.client.get_waiter("stack_create_complete")
         waiter.wait(StackName=stack_name)
 
+    def stack_exists(self) -> bool:
+        r = self.client.list_stacks(StackStatusFilter=['CREATE_IN_PROGRESS'])
+        return len(r['StackSummaries']) > 0
+
     def get_ip_address(self) -> str:
         response = self.client.describe_stacks(StackName=stack_name)
-        return response["Stacks"][0]["Outputs"][0]["OutputValue"]
+        try:
+            return response["Stacks"][0]["Outputs"][0]["OutputValue"]
+        except:
+            print("Invalid response while trying to get ip address.")
+            print(response)
+            raise Exception("IP address not found")
 
     def delete_instance_stack(self):
         self.client.delete_stack(StackName=stack_name)

@@ -10,8 +10,8 @@ class SshUtil:
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.ssh.connect(ip, username="ubuntu", pkey=key)
 
-    def run_access_service(self, bucket) -> int:
-        command = f"./access --bucket {bucket} --nolog"
+    def run_access_service(self, bucket: str, accessor: str) -> int:
+        command = f"./access --bucket {bucket} --accessor {accessor} --nolog"
         self.ssh.exec_command(f"nohup {command} > server.log 2>&1< /dev/null &")
 
         _, out, _ = self.ssh.exec_command(f"ps -C access -o pid=")
