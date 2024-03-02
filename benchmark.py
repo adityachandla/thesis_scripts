@@ -5,8 +5,6 @@ import buildUtil
 from cfUtil import CfUtil
 from sshUtil import SshUtil
 
-access_dir = "../graph_access_service"
-algorithm_dir = "../graph_algorithm_service"
 
 general_buckets = {
         "bucket1": "s3graphtest1",
@@ -20,10 +18,10 @@ onezone_buckets = {
 
 scaling_factors = ["1", "10"]
 
-def run_tests(ip: str, buckets: dict[str, str]):
+def run_tests(ip: str, buckets: dict[str, str], accessor):
     # Build and copy the binaries.
-    buildUitl.build_graph_access()
-    buildUitl.build_graph_algorithm()
+    buildUtil.build_graph_access()
+    buildUtil.build_graph_algorithm()
     print("Built binaries for graph access and algorithm service")
 
     buildUtil.copy_access_files(ip)
@@ -32,7 +30,7 @@ def run_tests(ip: str, buckets: dict[str, str]):
 
     ssh = SshUtil(ip)
     for sf in scaling_factors:
-        pid = ssh.run_access_service(ssh, buckets["bucket" + sf], args.accessor)
+        pid = ssh.run_access_service(buckets["bucket" + sf], accessor)
         time.sleep(2)
         ssh.run_algorithm_service(sf)
         ssh.kill_access_service(pid)
@@ -44,6 +42,7 @@ def main():
                                      description="Creates benchmarks")
     parser.add_argument('-b', '--bucket-type', choices=["general", "onezone"])
     parser.add_argument('-a', '--accessor', choices=["prefetch", "offset", "simple"])
+    parser.add_argument('-r', '--remove', action='store_true')
     parser.add_argument('-d', '--directory')
 
     args = parser.parse_args()
@@ -55,18 +54,19 @@ def main():
         buckets = onezone_buckets
     cf = CfUtil()
 
-    if not cf.stack_exists()
+    if not cf.stack_exists():
         cf.create_instance_stack()
         cf.await_stack_creation()
 
     ip = cf.get_ip_address()
     print(f"Created instance with IP: {ip}")
 
-    run_tests(ip, buckets)
-    buildUtil.copy_results(ip, dir)
+    run_tests(ip, buckets, args.accessor)
+    buildUtil.copy_results(ip, args.directory)
 
-    cf.delete_instance_stack()
-    cf.await_stack_deletion()
+    if args.remove:
+        cf.delete_instance_stack()
+        cf.await_stack_deletion()
 
 if __name__ == "__main__":
     main()

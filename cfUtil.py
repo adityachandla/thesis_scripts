@@ -1,7 +1,7 @@
 import boto3
 
 stack_name = "GraphInstanceStack"
-instance_type = "c7gn.large"
+instance_type = "c7gn.xlarge"
 cf_stack_file = "ec2_cf.yaml"
 
 class CfUtil:
@@ -19,7 +19,7 @@ class CfUtil:
 
         response = self.client.create_stack(StackName=stack_name, 
                                        Parameters=[instance_parameter],
-                                       TemplateBody=self.read_file(cf_stack_file),
+                                       TemplateBody=self._read_file(cf_stack_file),
                                        Capabilities=["CAPABILITY_IAM"])
         print(f"started stack creation with StackID:{response['StackId']}")
         return response['StackId']
@@ -29,7 +29,8 @@ class CfUtil:
         waiter.wait(StackName=stack_name)
 
     def stack_exists(self) -> bool:
-        r = self.client.list_stacks(StackStatusFilter=['CREATE_IN_PROGRESS'])
+        statuses = ['CREATE_IN_PROGRESS', 'CREATE_COMPLETE']
+        r = self.client.list_stacks(StackStatusFilter=statuses)
         return len(r['StackSummaries']) > 0
 
     def get_ip_address(self) -> str:

@@ -15,6 +15,7 @@ class SshUtil:
         self.ssh.exec_command(f"nohup {command} > server.log 2>&1< /dev/null &")
 
         _, out, _ = self.ssh.exec_command(f"ps -C access -o pid=")
+        print("Started access service")
         return int(out.read().decode().strip())
 
     def run_algorithm_service(self, sf: str):
@@ -26,7 +27,7 @@ class SshUtil:
                 command = f"./algo --parallelism {p} --repetitions {reps} --algorithm {a} "
                 command += f"--nodeMap nodeMap{sf}.csv "
                 command += f">> s3_{a}_{p}_{sf}.txt 2>&1"
-                _, out, _ = self.ssh_client.exec_command(command)
+                _, out, _ = self.ssh.exec_command(command)
                 out.channel.recv_exit_status()
                 print(f"Finished {a} with parallelism={p}")
 

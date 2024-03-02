@@ -1,6 +1,9 @@
 import os
 
 scp_prefix = "scp -o StrictHostKeyChecking=accept-new"
+access_dir = "../graph_access_service"
+algorithm_dir = "../graph_algorithm_service"
+ssh_key = "/home/aditya/Downloads/graphDbVirginia.pem"
 
 def copy_to_server(ip:str, path_to_copy: str):
     os.system(f"{scp_prefix} -i {ssh_key} {path_to_copy} ubuntu@{ip}:~/")
@@ -27,4 +30,4 @@ def copy_algorithm_files(ip: str):
 def copy_results(ip: str, directory: str):
     if not os.path.isdir(directory):
         os.mkdir(directory)
-    os.system(f"{scp_prefix} -i {ssh_key} ubuntu@{ip}:{path_to_copy} {directory}")
+    os.system(f"{scp_prefix} -i {ssh_key} ubuntu@{ip}:~/s3*.txt {directory}")
