@@ -4,6 +4,11 @@ stack_name = "GraphInstanceStack"
 instance_type = "c7gn.xlarge"
 cf_stack_file = "ec2_cf.yaml"
 
+neo_stack_name = "NeoInstancesStack"
+neo_stack_file = "ec2_neo4j.yaml"
+neo_instance_type = "t4g.medium"
+
+
 class CfUtil:
     def __init__(self):
         self.client = boto3.client("cloudformation")
@@ -24,9 +29,25 @@ class CfUtil:
         print(f"started stack creation with StackID:{response['StackId']}")
         return response['StackId']
 
+    def create_neo_stack(self) -> str:
+        instance_parameter = dict()
+        instance_parameter["ParameterKey"] = "InstanceTypeParameter"
+        instance_parameter["ParameterValue"] = neo_instance_type
+
+        response = self.client.create_stack(StackName=neo_stack_name, 
+                                       Parameters=[instance_parameter],
+                                       TemplateBody=self._read_file(neo_stack_file),
+                                       Capabilities=["CAPABILITY_IAM"])
+        print(f"started stack creation with StackID:{response['StackId']}")
+        return response['StackId']
+
     def await_stack_creation(self):
         waiter = self.client.get_waiter("stack_create_complete")
-        waiter.wait(StackName=stack_name)
+        waiter.wait(StackName=name)
+
+    def await_neo_stack_creation(self):
+        waiter = self.client.get_waiter("stack_create_complete")
+        waiter.wait(StackName=neo_stack_name)
 
     def stack_exists(self) -> bool:
         statuses = ['CREATE_IN_PROGRESS', 'CREATE_COMPLETE']
@@ -37,6 +58,16 @@ class CfUtil:
         response = self.client.describe_stacks(StackName=stack_name)
         try:
             return response["Stacks"][0]["Outputs"][0]["OutputValue"]
+        except:
+            print("Invalid response while trying to get ip address.")
+            print(response)
+            raise Exception("IP address not found")
+
+    def get_neo_ips(self) -> tuple[str,str]:
+        response = self.client.describe_stacks(StackName=stack_name)
+        try:
+            return (response["Stacks"][0]["Outputs"][0]["OutputValue"],
+                    response["Stacks"][0]["Outputs"][1]["OutputValue"])
         except:
             print("Invalid response while trying to get ip address.")
             print(response)

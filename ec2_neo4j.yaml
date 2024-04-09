@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'EC2 Spot Instance with Ubuntu'
+
+Parameters:
+  InstanceTypeParameter:
+    Type: String
+    Default: t4g.medium
+    Description: Enter instance type.
+
+Resources:
+  NeoInstance1:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceTypeParameter
+      IamInstanceProfile: !Ref GraphInstanceProfile
+      AvailabilityZone: us-east-1d
+      ImageId: ami-045ea3455a580d2d7  # Ubuntu 22.04, neo4j enterprise, sf-1
+      KeyName: graphDbVirginia
+      SecurityGroups: [!Ref 'InstanceSecurityGroup']
+
+  NeoInstance2:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceTypeParameter
+      IamInstanceProfile: !Ref GraphInstanceProfile
+      AvailabilityZone: us-east-1c
+      ImageId: ami-045ea3455a580d2d7  # Ubuntu 22.04, neo4j enterprise, sf-1
+      KeyName: graphDbVirginia
+      SecurityGroups: [!Ref 'InstanceSecurityGroup']
+
+  GraphInstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      Path: "/"
+      Roles:
+        - S3Ec2Access
+
+  InstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Enable SSH access'
+      SecurityGroupIngress:
+        - IpProtocol: tcp # Allow SSH access from any IP.
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0  
+        - IpProtocol: tcp # Neo4j bolt and webUI ports.
+          FromPort: 7474
+          ToPort: 7474
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 7687
+          ToPort: 7687
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 7688
+          ToPort: 7688
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp # Neo4j cluster mode ports.
+          FromPort: 5000
+          ToPort: 5000
+        - IpProtocol: tcp
+          FromPort: 6000
+          ToPort: 6000
+        - IpProtocol: tcp
+          FromPort: 7000
+          ToPort: 7000
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+
+Outputs:
+  Instance1IP:
+    Description: 'IP address of the first instance'
+    Value: !GetAtt NeoInstance1.PublicIp
+    Export:
+      Name: !Sub 'InstanceId-${AWS::StackName}'
+  Instance2IP:
+    Description: 'IP address of the second instance'
+    Value: !GetAtt NeoInstance2.PublicIp
+    Export:
+      Name: !Sub 'InstanceId2-${AWS::StackName}'
+# Stack name NeoInstancesStack

@@ -47,13 +47,14 @@ def chart(name: str, times: dict[str, list[numeric]], types: list[str]):
     for fs, time_array in times.items():
         offset = width*mult
         rects = ax.bar(x+offset, time_array, width, label=fs)
-        ax.bar_label(rects, padding=3)
+        ax.bar_label(rects, padding=3, rotation='vertical')
         mult += 1
 
     ax.set_ylabel("Running time milliseconds")
     ax.set_title("Average time")
     ax.set_xticks(x+width, types)
     ax.legend(loc='upper right', ncols=1)
+    plt.ylim(1, 1_000_000)
     plt.yscale("log")
     plt.savefig(name)
     plt.yscale("linear")

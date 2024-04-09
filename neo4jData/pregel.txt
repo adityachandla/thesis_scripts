@@ -1,0 +1,94 @@
+[[1;34mINFO[m] Scanning for projects...
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m-----------------------< [0;36morg.example:neo4jBench[0;1m >-----------------------[m
+[[1;34mINFO[m] [1mBuilding neo4jBench 1.0-SNAPSHOT[m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mexec-maven-plugin:3.2.0:java[m [1m(default-cli)[m @ [36mneo4jBench[0;1m ---[m
+QueryDepth=1,RunningTime=1154229,NumRes=3
+QueryDepth=1,RunningTime=804726,NumRes=71
+QueryDepth=1,RunningTime=878611,NumRes=16
+QueryDepth=1,RunningTime=820854,NumRes=1
+QueryDepth=1,RunningTime=852503,NumRes=2
+QueryDepth=1,RunningTime=818205,NumRes=12
+QueryDepth=1,RunningTime=845034,NumRes=40
+QueryDepth=1,RunningTime=837492,NumRes=8
+QueryDepth=1,RunningTime=837781,NumRes=2
+QueryDepth=1,RunningTime=819923,NumRes=151
+QueryDepth=1,RunningTime=843780,NumRes=8
+QueryDepth=1,RunningTime=813270,NumRes=45
+QueryDepth=1,RunningTime=835728,NumRes=32
+QueryDepth=1,RunningTime=814812,NumRes=14
+QueryDepth=1,RunningTime=831727,NumRes=30
+QueryDepth=1,RunningTime=817597,NumRes=9
+QueryDepth=1,RunningTime=821448,NumRes=0
+QueryDepth=1,RunningTime=814276,NumRes=1
+QueryDepth=1,RunningTime=835613,NumRes=25
+QueryDepth=1,RunningTime=822960,NumRes=128
+QueryDepth=2,RunningTime=843286,NumRes=183
+QueryDepth=2,RunningTime=832120,NumRes=244
+QueryDepth=2,RunningTime=860003,NumRes=149
+QueryDepth=2,RunningTime=834777,NumRes=3927
+QueryDepth=2,RunningTime=848325,NumRes=1528
+QueryDepth=2,RunningTime=831051,NumRes=387
+QueryDepth=2,RunningTime=804385,NumRes=0
+QueryDepth=2,RunningTime=832895,NumRes=274
+QueryDepth=2,RunningTime=851877,NumRes=259
+QueryDepth=2,RunningTime=853217,NumRes=197
+QueryDepth=2,RunningTime=859670,NumRes=16
+QueryDepth=2,RunningTime=839513,NumRes=37
+QueryDepth=2,RunningTime=835890,NumRes=0
+QueryDepth=2,RunningTime=829822,NumRes=512
+QueryDepth=2,RunningTime=849166,NumRes=459
+QueryDepth=2,RunningTime=830338,NumRes=441
+QueryDepth=2,RunningTime=864508,NumRes=19
+QueryDepth=2,RunningTime=797194,NumRes=0
+QueryDepth=2,RunningTime=854742,NumRes=707
+QueryDepth=2,RunningTime=799068,NumRes=0
+QueryDepth=3,RunningTime=820405,NumRes=0
+QueryDepth=3,RunningTime=821677,NumRes=0
+QueryDepth=3,RunningTime=875484,NumRes=4752
+QueryDepth=3,RunningTime=848004,NumRes=2250
+QueryDepth=3,RunningTime=874867,NumRes=1011
+QueryDepth=3,RunningTime=855211,NumRes=3796
+QueryDepth=3,RunningTime=871684,NumRes=309
+QueryDepth=3,RunningTime=816912,NumRes=0
+QueryDepth=3,RunningTime=867779,NumRes=868
+QueryDepth=3,RunningTime=809930,NumRes=0
+QueryDepth=3,RunningTime=880763,NumRes=2044
+QueryDepth=3,RunningTime=835330,NumRes=0
+QueryDepth=3,RunningTime=875037,NumRes=2857
+QueryDepth=3,RunningTime=812938,NumRes=0
+QueryDepth=3,RunningTime=869047,NumRes=28
+QueryDepth=3,RunningTime=893004,NumRes=437
+QueryDepth=3,RunningTime=871514,NumRes=2116
+QueryDepth=3,RunningTime=887056,NumRes=70
+QueryDepth=3,RunningTime=817597,NumRes=0
+QueryDepth=3,RunningTime=882912,NumRes=2547
+QueryDepth=4,RunningTime=883118,NumRes=277
+QueryDepth=4,RunningTime=823655,NumRes=0
+QueryDepth=4,RunningTime=878921,NumRes=1212
+QueryDepth=4,RunningTime=888437,NumRes=603
+QueryDepth=4,RunningTime=917750,NumRes=832
+QueryDepth=4,RunningTime=886073,NumRes=503
+QueryDepth=4,RunningTime=885335,NumRes=1071
+QueryDepth=4,RunningTime=810301,NumRes=0
+QueryDepth=4,RunningTime=889895,NumRes=465
+QueryDepth=4,RunningTime=902785,NumRes=1921
+QueryDepth=4,RunningTime=813532,NumRes=0
+QueryDepth=4,RunningTime=888347,NumRes=27
+QueryDepth=4,RunningTime=889237,NumRes=1
+QueryDepth=4,RunningTime=836736,NumRes=0
+QueryDepth=4,RunningTime=889105,NumRes=276
+QueryDepth=4,RunningTime=887120,NumRes=588
+QueryDepth=4,RunningTime=888909,NumRes=828
+QueryDepth=4,RunningTime=885342,NumRes=121
+QueryDepth=4,RunningTime=920192,NumRes=131
+QueryDepth=4,RunningTime=906666,NumRes=429
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] [1;32mBUILD SUCCESS[m
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] Total time:  01:10 min
+[[1;34mINFO[m] Finished at: 2024-03-29T14:49:18+01:00
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[0m
