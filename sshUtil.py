@@ -19,7 +19,7 @@ class SshUtil:
         return int(out.read().decode().strip())
 
     def run_algorithm_service(self, sf: str):
-        algos = ["bfs", "dfs"]
+        algos = ["bfs", "dfs", "bfsp", "dfsp"]
         parallelism = ["1", "2"]
         reps = 20
         for p in parallelism:

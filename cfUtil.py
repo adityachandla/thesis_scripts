@@ -43,16 +43,23 @@ class CfUtil:
 
     def await_stack_creation(self):
         waiter = self.client.get_waiter("stack_create_complete")
-        waiter.wait(StackName=name)
+        waiter.wait(StackName=stack_name)
 
     def await_neo_stack_creation(self):
         waiter = self.client.get_waiter("stack_create_complete")
         waiter.wait(StackName=neo_stack_name)
 
     def stack_exists(self) -> bool:
-        statuses = ['CREATE_IN_PROGRESS', 'CREATE_COMPLETE']
-        r = self.client.list_stacks(StackStatusFilter=statuses)
-        return len(r['StackSummaries']) > 0
+        statuses = []
+        r = self.client.list_stacks(StackStatusFilter=['CREATE_COMPLETE'])
+        if len(r['StackSummaries']) > 0:
+            return True
+        r = self.client.list_stacks(StackStatusFilter=['CREATE_IN_PROGRESS'])
+        if len(r['StackSummaries']) > 0:
+            self.await_stack_creation()
+            return True
+        return False
+
 
     def get_ip_address(self) -> str:
         response = self.client.describe_stacks(StackName=stack_name)
