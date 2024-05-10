@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 scp_prefix = "scp -o StrictHostKeyChecking=accept-new"
 access_dir = "../graph_access_service"
@@ -29,5 +30,5 @@ def copy_algorithm_files(ip: str):
 
 def copy_results(ip: str, directory: str):
     if not os.path.isdir(directory):
-        os.mkdir(directory)
+        Path(directory).mkdir(parents=True, exist_ok=True)
     os.system(f"{scp_prefix} -i {ssh_key} ubuntu@{ip}:~/s3*.txt {directory}")

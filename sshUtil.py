@@ -34,6 +34,9 @@ class SshUtil:
     def kill_access_service(self, pid: int):
         self.ssh.exec_command(f"kill {pid}")
 
+    def clean_files(self):
+        self.ssh.exec_command(f"rm -rf ~/")
+
     def close(self):
         self.ssh.close()
 
