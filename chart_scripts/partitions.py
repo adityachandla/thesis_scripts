@@ -38,9 +38,10 @@ def sum_time(l: list[QueryResult]) -> float:
     s = 0
     for qr in l:
         s += qr.time
-    return s
+    return s/1000
 
-def chart(name: str, times: dict[str, list[numeric]], types: list[str]):
+def chart(name: str, times: dict[str, list[numeric]], types: list[str], 
+          scale: str = "log", ylim_low: int = None, ylim_high: int = None):
     x = np.arange(len(types))
     width = 0.25
     mult = 0
@@ -56,9 +57,11 @@ def chart(name: str, times: dict[str, list[numeric]], types: list[str]):
     ax.set_title("Average time")
     ax.set_xticks(x+width, types)
     ax.legend(loc='upper right', ncols=1)
-    plt.ylim(1, 1_000_000)
-    plt.yscale("log")
+    if ylim_low is not None:
+        plt.ylim(ylim_low, ylim_high)
+    plt.yscale(scale)
     plt.savefig(name)
+    plt.close()
 
 def read_file(name: str) -> (list[QueryResult], list[Stats]):
     with open(name) as f:
@@ -92,7 +95,7 @@ def compare_partitioning(bucket: str, algo: str, parallelism: int):
         times["128MB"].append(avg(onetwentyeight_res[20*i:20*(i+1)]))
 
     image_dir = f"{image_directory}/cmp_{bucket}_{algo}_{parallelism}.png"
-    chart(image_dir, times, labels)
+    chart(image_dir, times, labels, ylim_low=1, ylim_high=1_000_000)
 
     # Total runtime chart
     total_times = {"Total Time": list()}
@@ -102,7 +105,7 @@ def compare_partitioning(bucket: str, algo: str, parallelism: int):
     total_times["Total Time"].append(sum_time(onetwentyeight_res))
 
     image_dir = f"{image_directory}/total_{bucket}_{algo}_{parallelism}.png"
-    chart(image_dir, total_times, labels)
+    chart(image_dir, total_times, labels, scale="linear")
 
 
 def main():
