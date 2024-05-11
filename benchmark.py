@@ -1,9 +1,9 @@
 import time
 import argparse
 
-import buildUtil
-from cfUtil import CfUtil
-from sshUtil import SshUtil
+import lib.buildUtil
+from lib.cfUtil import CfUtil
+from lib.sshUtil import SshUtil
 
 
 general_buckets = {
@@ -20,12 +20,12 @@ scaling_factors = ["1", "10"]
 
 def run_tests(ip: str, buckets: dict[str, str], accessor):
     # Build and copy the binaries.
-    buildUtil.build_graph_access()
-    buildUtil.build_graph_algorithm()
+    lib.buildUtil.build_graph_access()
+    lib.buildUtil.build_graph_algorithm()
     print("Built binaries for graph access and algorithm service")
 
-    buildUtil.copy_access_files(ip)
-    buildUtil.copy_algorithm_files(ip)
+    lib.buildUtil.copy_access_files(ip)
+    lib.buildUtil.copy_algorithm_files(ip)
     print("Copied required files to the destination")
 
     ssh = SshUtil(ip)
@@ -62,7 +62,7 @@ def main():
     print(f"Created instance with IP: {ip}")
 
     run_tests(ip, buckets, args.accessor)
-    buildUtil.copy_results(ip, args.directory)
+    lib.buildUtil.copy_results(ip, args.directory)
 
     if args.remove:
         cf.delete_instance_stack()
