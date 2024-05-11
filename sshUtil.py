@@ -32,10 +32,12 @@ class SshUtil:
                 print(f"Finished {a} with parallelism={p}")
 
     def kill_access_service(self, pid: int):
-        self.ssh.exec_command(f"kill {pid}")
+        _, out, _ = self.ssh.exec_command(f"kill {pid}")
+        out.channel.recv_exit_status()
 
     def clean_files(self):
-        self.ssh.exec_command(f"rm -rf ~/")
+        _, out, _ = self.ssh.exec_command(f"rm -rf ~/")
+        out.channel.recv_exit_status()
 
     def close(self):
         self.ssh.close()

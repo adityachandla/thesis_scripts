@@ -35,13 +35,6 @@ def run_tests(ip: str, bucket: str, accessor: str):
     ssh.close()
 
 def prepare_partition(size: str):
-    os.system(f"(cd ../ldbc_converter ;" 
-              f"go run cmd/adj/main.go -partSize {size} -outDir sf10/partTest/adj{size})")
-    print("Created adjacency")
-    os.system(f"(cd ../ldbc_converter ;"
-              f"go run cmd/byteoffset_csr/main.go sf10/partTest/adj{size} sf10/partTest/ocsr{size})")
-    print("Created ocsr")
-
     # Copy the csr to both buckets
     os.system(f"(cd ../ldbc_converter ;" 
               f"go run cmd/copier/main.go -src sf10/partTest/ocsr{size} -dest onezone)")
@@ -49,10 +42,6 @@ def prepare_partition(size: str):
     os.system(f"(cd ../ldbc_converter ;"
               f"go run cmd/copier/main.go -src sf10/partTest/ocsr{size} -dest general)")
     print("Copied to onezone bucket")
-
-def delete_partition(size: str):
-    os.system(f"rm -rf ../ldbc_converter/sf10/partTest/adj{size}")
-    os.system(f"rm -rf ../ldbc_converter/sf10/partTest/ocsr{size}")
 
 def main():
     parser = argparse.ArgumentParser(prog='Partition size benchmarks', 
@@ -64,7 +53,6 @@ def main():
 
     if not cf.stack_exists():
         cf.create_instance_stack()
-        cf.await_stack_creation()
 
     ip = cf.get_ip_address()
     print(f"Created instance with IP: {ip}")
@@ -73,6 +61,8 @@ def main():
         prepare_partition(part)
         print(f"Prepared partitoin of size {part}Mb")
         
+        cf.await_stack_creation()
+
         # Test with general bucket
         run_tests(ip, GENERAL_BUCKET, ACCESSOR)
         buildUtil.copy_results(ip, f"{args.directory}/part{part}_general/")
@@ -81,7 +71,6 @@ def main():
         run_tests(ip, ONEZONE_BUCKET, ACCESSOR)
         buildUtil.copy_results(ip, f"{args.directory}/part{part}_onezone/")
 
-        delete_partition(part)
         print(f"Finished tests for partition of size {part}Mb")
 
     cf.delete_instance_stack()
