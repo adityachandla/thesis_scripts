@@ -35,5 +35,5 @@ def copy_results(ip: str, directory: str):
         Path(directory).mkdir(parents=True, exist_ok=True)
     val = os.system(f"{scp_prefix} -i {ssh_key} ubuntu@{ip}:~/s3*.txt {directory}")
     if val != 0:
-        print("Got exit code " + val)
+        print(f"Got exit code {val}")
         raise Exception()

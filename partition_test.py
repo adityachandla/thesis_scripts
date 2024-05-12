@@ -13,7 +13,10 @@ ONEZONE_BUCKET = "s3graphtest10oz--use1-az6--x-s3"
 ACCESSOR = "prefetch"
 SCALING_FACTOR = "10"
 
-PARTITION_SIZES = ["16", "64", "128"]
+#PARTITION_SIZES = ["16", "64", "128"]
+PARTITION_SIZES = ["64", "128"]
+ALGOS = ["bfsp", "dfsp"]
+PARALLELISMS = ["4", "6"]
 
 def run_tests(ssh: SshUtil, ip: str, bucket: str):
     # Build and copy the binaries.
@@ -27,7 +30,7 @@ def run_tests(ssh: SshUtil, ip: str, bucket: str):
 
     pid = ssh.run_access_service(bucket, ACCESSOR)
     time.sleep(10)
-    ssh.run_algorithm_service(SCALING_FACTOR)
+    ssh.run_algorithm_service(SCALING_FACTOR, algos=ALGOS, parallelism=PARALLELISMS)
     ssh.kill_access_service(pid)
 
 def main():
@@ -50,6 +53,7 @@ def main():
                   f"go run cmd/copier/main.go -src sf10/partTest/ocsr{part} -dest general)")
         print("Copied to general bucket")
         ssh = SshUtil(ip)
+        ssh.clean_files()
         # Test with general bucket
         run_tests(ssh, ip, GENERAL_BUCKET)
         lib.buildUtil.copy_results(ip, f"{args.directory}/part{part}_general/")

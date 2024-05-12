@@ -2,6 +2,9 @@ import paramiko
 
 ssh_key = "/home/aditya/Downloads/graphDbVirginia.pem"
 
+default_algos = ["bfs", "dfs", "bfsp", "dfsp"]
+default_parallelism = ["1", "2"]
+
 class SshUtil:
 
     def __init__(self, ip):
@@ -18,9 +21,8 @@ class SshUtil:
         print("Started access service")
         return int(out.read().decode().strip())
 
-    def run_algorithm_service(self, sf: str):
-        algos = ["bfs", "dfs", "bfsp", "dfsp"]
-        parallelism = ["1", "2"]
+    def run_algorithm_service(self, sf: str, 
+                              algos: list[str] = default_algos, parallelism: list[str] = default_parallelism):
         reps = 20
         for p in parallelism:
             for a in algos:
