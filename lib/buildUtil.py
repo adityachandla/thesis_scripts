@@ -26,7 +26,7 @@ def build_graph_algorithm():
 
 def copy_algorithm_files(ip: str):
     copy_to_server(ip, "./algo")
-    files = ["run_variations_s3.sh", "*.csv","queries.txt"]
+    files = ["*.csv", "queries.txt"]
     for file in files:
         copy_to_server(ip, f"{algorithm_dir}/{file}")
 
