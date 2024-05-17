@@ -33,6 +33,19 @@ class SshUtil:
                 out.channel.recv_exit_status()
                 print(f"Finished {a} with parallelism={p}")
 
+    def run_single_service(self, sf: str, bucket: str, accessor: str,
+                              algos: list[str] = default_algos, parallelism: list[str] = default_parallelism):
+        reps = 20
+        for p in parallelism:
+            for a in algos:
+                command = f"./algo --parallelism {p} --repetitions {reps} --algorithm {a} "
+                command += f"--nodeMap nodeMap{sf}.csv "
+                command += f"--bucket {bucket} --accessor {accessor} "
+                command += f">> s3_{a}_{p}_{sf}.txt 2>&1"
+                _, out, _ = self.ssh.exec_command(command)
+                out.channel.recv_exit_status()
+                print(f"Finished {a} with parallelism={p}")
+
     def kill_access_service(self, pid: int):
         _, out, _ = self.ssh.exec_command(f"kill {pid}")
         out.channel.recv_exit_status()
