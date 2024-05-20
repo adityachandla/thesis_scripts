@@ -53,6 +53,28 @@ def read_file(name: str) -> (list[QueryResult], list[Stats]):
             res.append(QueryResult(int(matches[0]), int(matches[2]), int(matches[1])))
     return res, stats
 
+def chart(name: str, times: dict[str, list[numeric]], types: list[str], 
+          scale: str = "log", ylim_low: int = None, ylim_high: int = None):
+    x = np.arange(len(types))
+    width = 0.25
+    mult = 0
+
+    _, ax = plt.subplots(layout='constrained')
+    for fs, time_array in times.items():
+        offset = width*mult
+        rects = ax.bar(x+offset, time_array, width, label=fs)
+        ax.bar_label(rects, padding=3, rotation='vertical')
+        mult += 1
+
+    ax.set_ylabel("Running time milliseconds")
+    ax.set_title("Average time")
+    ax.set_xticks(x+width, types)
+    ax.legend(loc='upper right', ncols=1)
+    if ylim_low is not None:
+        plt.ylim(ylim_low, ylim_high)
+    plt.yscale(scale)
+    plt.savefig(name)
+    plt.close()
 
 def main():
     parser = argparse.ArgumentParser()

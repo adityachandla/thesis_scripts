@@ -13,10 +13,11 @@ ONEZONE_BUCKET = "s3graphtest10oz--use1-az6--x-s3"
 ACCESSOR = "prefetch"
 SCALING_FACTOR = "10"
 
-#PARTITION_SIZES = ["16", "64", "128"]
-PARTITION_SIZES = ["64", "128"]
+#PARTITION_SIZES = ["2", "16", "64", "128"]
+PARTITION_SIZES = ["16", "64", "128"]
 ALGOS = ["bfsp", "dfsp"]
-PARALLELISMS = ["4", "6"]
+# PARALLELISMS = ["1", "2", "4", "6", "10", "20"]
+PARALLELISMS = ["10", "20"]
 
 def run_tests(ssh: SshUtil, ip: str, bucket: str):
     # Build and copy the binaries.
@@ -29,7 +30,7 @@ def run_tests(ssh: SshUtil, ip: str, bucket: str):
     print("Copied required files to the destination")
 
     pid = ssh.run_access_service(bucket, ACCESSOR)
-    time.sleep(10)
+    time.sleep(20)
     ssh.run_algorithm_service(SCALING_FACTOR, algos=ALGOS, parallelism=PARALLELISMS)
     ssh.kill_access_service(pid)
 
@@ -60,12 +61,13 @@ def main():
         ssh.clean_files()
 
         # Test with onezone bucket
-        os.system(f"(cd ../ldbc_converter ;" 
-                  f"go run cmd/copier/main.go -src sf10/partTest/ocsr{part} -dest onezone)")
-        print("Copied to onezone bucket")
-        run_tests(ssh, ip, ONEZONE_BUCKET)
-        lib.buildUtil.copy_results(ip, f"{args.directory}/part{part}_onezone/")
-        ssh.clean_files()
+        # TODO Uncomment this
+        # os.system(f"(cd ../ldbc_converter ;" 
+                  # f"go run cmd/copier/main.go -src sf10/partTest/ocsr{part} -dest onezone)")
+        # print("Copied to onezone bucket")
+        # run_tests(ssh, ip, ONEZONE_BUCKET)
+        # lib.buildUtil.copy_results(ip, f"{args.directory}/part{part}_onezone/")
+        # ssh.clean_files()
 
         print(f"Finished tests for partition of size {part}Mb")
         ssh.close()

@@ -16,9 +16,10 @@ onezone_buckets = {
         "bucket10": "s3graphtest10oz--use1-az6--x-s3"
         }
 
-scaling_factors = ["1", "10"]
+# scaling_factors = ["1", "10"]
+scaling_factors = ["10"]
 
-def run_tests(ip: str, buckets: dict[str, str], accessor):
+def run_tests(ip: str, buckets: dict[str, str], accessor: str):
     # Build and copy the binaries.
     lib.buildUtil.build_graph_access()
     lib.buildUtil.build_graph_algorithm()
@@ -31,8 +32,8 @@ def run_tests(ip: str, buckets: dict[str, str], accessor):
     ssh = SshUtil(ip)
     for sf in scaling_factors:
         pid = ssh.run_access_service(buckets["bucket" + sf], accessor)
-        time.sleep(2)
-        ssh.run_algorithm_service(sf)
+        time.sleep(5)
+        ssh.run_algorithm_service(sf, algos=["dfspe"])
         ssh.kill_access_service(pid)
 
     ssh.close()
@@ -46,6 +47,7 @@ def main():
     parser.add_argument('-d', '--directory')
 
     args = parser.parse_args()
+    print(args)
     if args.bucket_type == 'general':
         print("Using general buckets")
         buckets = general_buckets

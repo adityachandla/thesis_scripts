@@ -24,7 +24,7 @@ def run_tests(ip: str, buckets: dict[str, str], accessor):
     print("Copied required files to the destination")
 
     algorithms = ["bfsp", "dfsp"]
-    parallelisms = ["4", "6", "8"]
+    parallelisms = ["4", "6", "10", "20"]
     ssh = SshUtil(ip)
     sf = "10"
     ssh.run_single_service(sf, buckets["bucket" + sf], accessor,
