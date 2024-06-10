@@ -21,7 +21,9 @@ def compare_algo(algo: str):
         res["Normal"].append(common.sum_time(normal_res))
     path = f"{image_dir}cmp_{algo}.png"
     common.chart(path, res, [str(i) for i in parallelism], 
-                 legend_loc="upper left", ylim_low=10, ylim_high=150, scale="linear")
+                 legend_loc="upper left", ylim_low=10, ylim_high=150, scale="linear",
+                 xlabel="Parallelism", ylabel="Sum query times (s)", 
+                 title="Total workload time")
 
 def main():
     for alg in algorithms:

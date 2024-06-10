@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'EC2 Spot Instance with Ubuntu'
+
+Parameters:
+  InstanceTypeParameter:
+    Type: String
+    Default: t4g.nano
+    Description: Enter instance type.
+
+Resources:
+  AccessService1:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceTypeParameter
+      IamInstanceProfile: !Ref GraphInstanceProfile
+      AvailabilityZone: us-east-1d
+      ImageId: ami-05d47d29a4c2d19e1  # Ubuntu Server 22.04
+      KeyName: graphDbVirginia
+      SecurityGroups: [!Ref 'InstanceSecurityGroup']
+
+  AccessService2:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceTypeParameter
+      IamInstanceProfile: !Ref GraphInstanceProfile
+      AvailabilityZone: us-east-1d
+      ImageId: ami-05d47d29a4c2d19e1  # Ubuntu Server 22.04
+      KeyName: graphDbVirginia
+      SecurityGroups: [!Ref 'InstanceSecurityGroup']
+
+  AlgoService:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceTypeParameter
+      IamInstanceProfile: !Ref GraphInstanceProfile
+      AvailabilityZone: us-east-1d
+      ImageId: ami-05d47d29a4c2d19e1  # Ubuntu Server 22.04
+      KeyName: graphDbVirginia
+      SecurityGroups: [!Ref 'InstanceSecurityGroup']
+
+  GraphInstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      Path: "/"
+      Roles:
+        - S3Ec2Access
+
+  InstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Enable SSH access'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0  # Allow SSH access from any IP.
+        - IpProtocol: tcp
+          FromPort: 20301
+          ToPort: 20301
+          CidrIp: 0.0.0.0/0  # Allow tcp access for access service.
+
+Outputs:
+  AccessService1:
+    Description: 'IP address of the instance'
+    Value: !GetAtt AccessService1.PublicIp
+    Export:
+      Name: !Sub 'InstanceId-${AWS::StackName}'
+  AccessService2:
+    Description: 'IP address of the instance'
+    Value: !GetAtt AccessService2.PublicIp
+    Export:
+      Name: !Sub 'InstanceId-${AWS::StackName}'
+  AlgoService:
+    Description: 'IP address of the instance'
+    Value: !GetAtt AlgoService.PublicIp
+    Export:
+      Name: !Sub 'InstanceId-${AWS::StackName}'
+# Stack name GraphInstanceStackDist

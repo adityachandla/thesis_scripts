@@ -9,7 +9,7 @@ ssh_key = "/home/aditya/Downloads/graphDbVirginia.pem"
 def copy_to_server(ip:str, path_to_copy: str):
     val = os.system(f"{scp_prefix} -i {ssh_key} {path_to_copy} ubuntu@{ip}:~/")
     if val != 0:
-        print("Got exit code " + val) 
+        print(f"Got exit code {val}") 
 
 def build_graph_access():
     os.system("rm -f {access_dir}/access")

@@ -18,8 +18,9 @@ class SshUtil:
         self.ssh.exec_command(f"nohup {command} > server.log 2>&1< /dev/null &")
 
         _, out, _ = self.ssh.exec_command(f"ps -C access -o pid=")
-        print("Started access service")
-        return int(out.read().decode().strip())
+        out_val = out.read().decode().strip()
+        print("Started access service: " + out_val)
+        return int(out_val)
 
     def run_algorithm_service(self, sf: str, 
                               algos: list[str] = default_algos, parallelism: list[str] = default_parallelism):
@@ -31,6 +32,24 @@ class SshUtil:
                 command += f">> s3_{a}_{p}_{sf}.txt 2>&1"
                 _, out, _ = self.ssh.exec_command(command)
                 out.channel.recv_exit_status()
+
+    def run_dist_algorithm_service(self, sf: str, ips: list[str], 
+                                   algos: list[str] = default_algos, 
+                                   parallelism: list[str] = default_parallelism):
+        reps = 20
+        ip_txt = ""
+        for ip in ips:
+            ip_txt += f"{ip}:20301,"
+        ip_txt = ip_txt[:-1]
+        for p in parallelism:
+            for a in algos:
+                command = f"./algo --parallelism {p} --repetitions {reps} --algorithm {a} "
+                command += f"--nodeMap nodeMap{sf}.csv "
+                command += f"--address {ip_txt} "
+                command += f">> s3_{a}_{p}_{sf}.txt 2>&1"
+                _, out, _ = self.ssh.exec_command(command)
+                out.channel.recv_exit_status()
+                print(f"Finished {a} with parallelism={p}")
                 print(f"Finished {a} with parallelism={p}")
 
     def run_single_service(self, sf: str, bucket: str, accessor: str,

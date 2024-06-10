@@ -55,7 +55,8 @@ def read_file(name: str) -> (list[QueryResult], list[Stats]):
 
 def chart(name: str, times: dict[str, list[numeric]], types: list[str], 
           scale: str = "log", ylim_low: int = None, ylim_high: int = None,
-          legend_loc: str = "upper right"):
+          legend_loc: str = "upper right", xlabel: str = "Queries", 
+          title:str = "Average time", ylabel: str= "Running time milliseconds"):
     x = np.arange(len(types))
     width = 0.25
     mult = 0
@@ -67,8 +68,9 @@ def chart(name: str, times: dict[str, list[numeric]], types: list[str],
         ax.bar_label(rects, padding=3, rotation='vertical')
         mult += 1
 
-    ax.set_ylabel("Running time milliseconds")
-    ax.set_title("Average time")
+    ax.set_ylabel(ylabel)
+    ax.set_xlabel(xlabel)
+    ax.set_title(title)
     ax.set_xticks(x+width, types)
     ax.legend(loc=legend_loc, ncols=1)
     if ylim_low is not None:

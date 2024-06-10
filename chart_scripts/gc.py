@@ -10,7 +10,10 @@ stw = 0
 max_stw = 0
 collected = 0
 for line in lines:
-    matches = pattern.findall(line)[0]
+    m = pattern.findall(line)
+    if len(m) == 0:
+        continue
+    matches = m[0]
     stw += float(matches[0])
     stw += float(matches[2])
     max_stw = max(max_stw, float(matches[0]), float(matches[2]))
