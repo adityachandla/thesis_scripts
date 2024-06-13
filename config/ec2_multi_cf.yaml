@@ -64,15 +64,15 @@ Outputs:
     Description: 'IP address of the instance'
     Value: !GetAtt AccessService1.PublicIp
     Export:
-      Name: !Sub 'InstanceId-${AWS::StackName}'
+      Name: !Sub 'InstanceId1-${AWS::StackName}'
   AccessService2:
     Description: 'IP address of the instance'
     Value: !GetAtt AccessService2.PublicIp
     Export:
-      Name: !Sub 'InstanceId-${AWS::StackName}'
+      Name: !Sub 'InstanceId2-${AWS::StackName}'
   AlgoService:
     Description: 'IP address of the instance'
     Value: !GetAtt AlgoService.PublicIp
     Export:
-      Name: !Sub 'InstanceId-${AWS::StackName}'
+      Name: !Sub 'InstanceId3-${AWS::StackName}'
 # Stack name GraphInstanceStackDist

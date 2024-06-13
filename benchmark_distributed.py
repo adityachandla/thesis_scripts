@@ -16,7 +16,8 @@ onezone_buckets = {
         "bucket10": "s3graphtest10oz--use1-az6--x-s3"
         }
 
-scaling_factors = ["1", "10"]
+scaling_factors = ["10"]
+# scaling_factors = ["1", "10"]
 
 def run_tests(ips: tuple[str,str,str], buckets: dict[str, str], accessor: str):
     # Build and copy the binaries.
@@ -24,28 +25,35 @@ def run_tests(ips: tuple[str,str,str], buckets: dict[str, str], accessor: str):
     lib.buildUtil.build_graph_algorithm()
     print("Built binaries for graph access and algorithm service")
 
-    lib.buildUtil.copy_access_files(ip[1])
-    lib.buildUtil.copy_access_files(ip[2])
-    lib.buildUtil.copy_algorithm_files(ip[0])
+    lib.buildUtil.copy_algorithm_files(ips[0])
+    for i in range(1, len(ips)):
+        lib.buildUtil.copy_access_files(ips[i])
+
     print("Copied required files to the destination servers")
 
-    access1 = SshUtil(ip[1])
-    access2 = SshUtil(ip[2])
-    algo = SshUtil(ip[0])
+    algo = SshUtil(ips[0])
+    access_services = []
+    for i in range(1, len(ips)):
+        access_services.append(SshUtil(ips[i]))
     for sf in scaling_factors:
-        pid1 = access1.run_access_service(buckets["bucket" + sf], accessor)
-        pid2 = access2.run_access_service(buckets["bucket" + sf], accessor)
+        access_pids = []
+        for access_service in access_services:
+            pid = access_service.run_access_service(buckets["bucket" + sf], accessor)
+            access_pids.append(pid)
 
-        time.sleep(5)
-        algo.run_algorithm_service(sf, algos=["bfsp", "dfspe"], parallelism=["1", "4", "6", "10", "20"])
+        time.sleep(10)
+        algo.run_dist_algorithm_service(sf, ips[1:], reps=100,
+                                        algos=["bfsp"], parallelism=["10", "20", "40"])
 
-        access1.kill_access_service(pid1)
-        access2.kill_access_service(pid2)
+        for idx, access_service in enumerate(access_services):
+            access_service.kill_access_service(access_pids[idx])
 
-    ssh.close()
+    algo.close()
+    for access_service in access_services:
+        access_service.close()
 
 def main():
-    parser = argparse.ArgumentParser(prog='BenchmarkScript', 
+    parser = argparse.ArgumentParser(prog='BenchmarkScript',
                                      description="Creates benchmarks")
     parser.add_argument('-b', '--bucket-type', choices=["general", "onezone"])
     parser.add_argument('-a', '--accessor', choices=["prefetch", "offset", "simple"])
@@ -66,11 +74,16 @@ def main():
         cf.await_dist_stack_creation()
 
     ips = cf.get_dist_ips()
-    print(f"Created instances with IPs: {ip}")
+    assert len(ips) == 3
+    print(f"Created instances with IPs: {ips}")
 
-    run_tests(ips, buckets, args.accessor)
+    # For two instances
+    # run_tests(ips, buckets, args.accessor)
+    # For single instance
+    run_tests(ips[:-1], buckets, args.accessor)
+
     # Ip 0 is for access service rest are for algo
-    lib.buildUtil.copy_results(ip[0], args.directory)
+    lib.buildUtil.copy_results(ips[0], args.directory)
 
     if args.remove:
         cf.delete_dist_stack()

@@ -32,7 +32,7 @@ def run_tests(ip: str, buckets: dict[str, str], accessor: str):
     for sf in scaling_factors:
         pid = ssh.run_access_service(buckets["bucket" + sf], accessor)
         time.sleep(5)
-        ssh.run_algorithm_service(sf, algos=["bfs", "dfs"], parallelism=["1", "4", "6", "10", "20"])
+        ssh.run_algorithm_service(sf, algos=["bfsp"], parallelism=["20"])
         ssh.kill_access_service(pid)
 
     ssh.close()

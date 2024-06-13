@@ -34,9 +34,8 @@ class SshUtil:
                 out.channel.recv_exit_status()
 
     def run_dist_algorithm_service(self, sf: str, ips: list[str], 
-                                   algos: list[str] = default_algos, 
+                                   algos: list[str] = default_algos, reps=20, 
                                    parallelism: list[str] = default_parallelism):
-        reps = 20
         ip_txt = ""
         for ip in ips:
             ip_txt += f"{ip}:20301,"
@@ -49,7 +48,6 @@ class SshUtil:
                 command += f">> s3_{a}_{p}_{sf}.txt 2>&1"
                 _, out, _ = self.ssh.exec_command(command)
                 out.channel.recv_exit_status()
-                print(f"Finished {a} with parallelism={p}")
                 print(f"Finished {a} with parallelism={p}")
 
     def run_single_service(self, sf: str, bucket: str, accessor: str,
