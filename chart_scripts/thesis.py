@@ -7,8 +7,36 @@ import common
 baseline_dir = "../data/final/firstImpl/general"
 final_dir = "../data/final/lastImpl/general"
 final_oz = "../data/final/lastImpl/onezone"
+
+dist_dir = "../data/final"
+
 old_dir = "../data/phase2ParallelPrefetchOZ"
 image_dir = "../images/thesis_images"
+part_base_dir = "../data/partTest"
+
+def create_part_chart(bucket: str, algorithm: str):
+    # On the x axis we want the parallelism and 
+    # on the y axis we want the total running time
+    plt.subplots(layout="constrained")
+
+    _, ax = plt.subplots(layout='constrained')
+    parallelisms = [1,2,4,6,10,20] 
+    for part in [2,16,64,128]:
+        running_times = []
+        for p in parallelisms:
+            file_name = f"{part_base_dir}/part{part}_{bucket}/s3_{algorithm}_{p}_10.txt"
+            times, _ = common.read_file(file_name)
+            total_running_time = common.sum_time(times)/p
+            print(f"At {p} with {part} = {total_running_time}")
+            running_times.append(total_running_time)
+        ax.plot(parallelisms, running_times, label=f"{part}MB", marker='o')
+
+    ax.set_ylabel("Running time seconds")
+    ax.set_xlabel("Parallelism")
+    ax.set_title("Partition size impact (BFS)")
+    ax.legend(loc='upper right', ncols=1)
+    plt.savefig(f"{image_dir}/part_cmp_{bucket}_{algorithm}.png")
+    plt.close()
 
 def pie_chart(name: str, pie_info: dict[str, int]):
     fig, ax = plt.subplots()
@@ -18,6 +46,20 @@ def pie_chart(name: str, pie_info: dict[str, int]):
 
     plt.savefig(name)
     plt.close()
+
+def create_distributed_chart():
+    parallelisms = [10, 20, 40]
+    one_instance, two_instances = [], []
+    for p in parallelisms:
+        times, _ = common.read_file(f"{dist_dir}/distributed_general_one/s3_bfsp_{p}_10.txt")
+        one_instance.append(common.sum_time(times)/p)
+
+        times, _ = common.read_file(f"{dist_dir}/distributed_general_two/s3_bfsp_{p}_10.txt")
+        two_instances.append(common.sum_time(times)/p)
+    times_dict = {"One Instance": one_instance, "Two Instances": two_instances}
+    chart(f"{image_dir}/distributed.png", times_dict, [str(i) for i in parallelisms],
+          scale="linear", ylim_low = 0, ylim_high=50, xlabel="Parallelism", 
+          ylabel="Running time Seconds", title="Total running time SF-10 BFS")
 
 def chart(name: str, times: dict[str, list[int]], types: list[str], 
           scale: str = "log", ylim_low: int = None, ylim_high: int = None,
@@ -151,7 +193,9 @@ def main():
     # create_baseline_comparison()
     # create_pie_chart()
     # create_parallelism_charts()
-    create_onezone_charts()
+    # create_onezone_charts()
+    # create_part_chart("general", "bfsp")
+    create_distributed_chart()
 
 if __name__ == "__main__":
     main()
