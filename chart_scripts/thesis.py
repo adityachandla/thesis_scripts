@@ -49,6 +49,7 @@ def pie_chart(name: str, pie_info: dict[str, int]):
 
 def create_distributed_chart():
     parallelisms = [10, 20, 40]
+    # For xlarge
     one_instance, two_instances = [], []
     for p in parallelisms:
         times, _ = common.read_file(f"{dist_dir}/distributed_general_one/s3_bfsp_{p}_10.txt")
@@ -56,8 +57,25 @@ def create_distributed_chart():
 
         times, _ = common.read_file(f"{dist_dir}/distributed_general_two/s3_bfsp_{p}_10.txt")
         two_instances.append(common.sum_time(times)/p)
+
     times_dict = {"One Instance": one_instance, "Two Instances": two_instances}
     chart(f"{image_dir}/distributed.png", times_dict, [str(i) for i in parallelisms],
+          scale="linear", ylim_low = 0, ylim_high=50, xlabel="Parallelism", 
+          ylabel="Running time Seconds", title="Total running time SF-10 BFS")
+
+    # For 2x large
+    one_instance, two_instances = [], []
+    for p in parallelisms:
+        times, _ = common.read_file(
+                f"{dist_dir}/distributed_general_one_2xlarge/s3_bfsp_{p}_10.txt")
+        one_instance.append(common.sum_time(times)/p)
+
+        times, _ = common.read_file(
+                f"{dist_dir}/distributed_general_two_2xlarge/s3_bfsp_{p}_10.txt")
+        two_instances.append(common.sum_time(times)/p)
+
+    times_dict = {"One Instance": one_instance, "Two Instances": two_instances}
+    chart(f"{image_dir}/distributed_large.png", times_dict, [str(i) for i in parallelisms],
           scale="linear", ylim_low = 0, ylim_high=50, xlabel="Parallelism", 
           ylabel="Running time Seconds", title="Total running time SF-10 BFS")
 
