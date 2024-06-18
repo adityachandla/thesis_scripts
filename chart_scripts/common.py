@@ -11,6 +11,8 @@ numeric = Union[int, float, complex]
 args = None
 
 line_format = re.compile(r"QueryId=(\d+) Results=(\d+) time=(\d+)ms")
+line_format_neo = re.compile(r"Query\w+=(\d+),RunningTime=(\d+),NumRes=(\d+)")
+line_format_fabric = re.compile(r"ready to start consuming query after (\d+) ms, results consumed after another (\d+) ms")
 num_queries = 7
 
 @dataclass
@@ -53,19 +55,42 @@ def read_file(name: str) -> (list[QueryResult], list[Stats]):
             res.append(QueryResult(int(matches[0]), int(matches[2]), int(matches[1])))
     return res, stats
 
+def read_fabric_file(name: str) -> list[int]:
+    with open(name) as f:
+        lines = f.read().strip().split("\n")
+    res = list()
+    for l in lines:
+        if not l.startswith("ready"):
+            continue
+        matches = line_format_fabric.findall(l)[0]
+        res.append(int(matches[0]) + int(matches[1]))
+    return res
+
+def read_neo_file(name: str) -> list[QueryResult]:
+    with open(name) as f:
+        lines = f.read().strip().split("\n")
+    res = list()
+    for l in lines:
+        if not l.startswith("Q"):
+            continue
+        matches = line_format_neo.findall(l)[0]
+        # Query id starts with 1 in this benchmark ;)
+        res.append(QueryResult(int(matches[0])-1, int(matches[1]), int(matches[2])))
+    return res
+
 def chart(name: str, times: dict[str, list[numeric]], types: list[str], 
           scale: str = "log", ylim_low: int = None, ylim_high: int = None,
           legend_loc: str = "upper right", xlabel: str = "Queries", 
-          title:str = "Average time", ylabel: str= "Running time milliseconds"):
+          title:str = "Average time", ylabel: str= "Running time milliseconds",
+          fmt='{:,.0f}', width=0.25):
     x = np.arange(len(types))
-    width = 0.25
     mult = 0
 
     _, ax = plt.subplots(layout='constrained')
     for fs, time_array in times.items():
         offset = width*mult
         rects = ax.bar(x+offset, time_array, width, label=fs)
-        ax.bar_label(rects, padding=3, rotation='vertical')
+        ax.bar_label(rects, fmt=fmt, padding=3, rotation='vertical')
         mult += 1
 
     ax.set_ylabel(ylabel)

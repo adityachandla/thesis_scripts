@@ -7,12 +7,84 @@ import common
 baseline_dir = "../data/final/firstImpl/general"
 final_dir = "../data/final/lastImpl/general"
 final_oz = "../data/final/lastImpl/onezone"
+neo4j_dir = "../data/neo4jData"
+neo4j_fabric_dir = "../data/neo4jFabricData"
 
 dist_dir = "../data/final"
 
 old_dir = "../data/phase2ParallelPrefetchOZ"
 image_dir = "../images/thesis_images"
 part_base_dir = "../data/partTest"
+
+def avg(l: list[float]) -> float:
+    return sum(l)/len(l)
+
+def compare_n(low_level: str, traversal: str, cypher: str, s3_file: str, image_file: str):
+    low_level_times = common.read_neo_file(low_level)
+    traversal_times = common.read_neo_file(traversal)
+    cypher_times = common.read_neo_file(cypher)
+    s3_times, _ = common.read_file(s3_file)
+
+    labels = ["Q"+str(i) for i in range(1,8)]
+    values = {"Low Level": list(),"Traversal":list(), "Cypher": list(), "S3 OZ": list()}
+    for i in range(7):
+        # Neo4j times are in microseconds
+        ll_avg = avg([res.time/1000 for res in low_level_times[20*i:20*(i+1)]])
+        values["Low Level"].append(ll_avg)
+
+        trav_avg = avg([res.time/1000 for res in traversal_times[20*i:20*(i+1)]])
+        values["Traversal"].append(trav_avg)
+
+        # First cypher query creates query plan.
+        cypher_avg = avg([res.time/1000 for res in cypher_times[(20*i)+1:20*(i+1)]])
+        values["Cypher"].append(cypher_avg)
+
+        s3_avg = avg([res.time for res in s3_times[20*i:20*(i+1)]])
+        values["S3 OZ"].append(s3_avg)
+    common.chart(image_file, values, labels, ylim_low=0.01, ylim_high=100_000,
+                 title="Average time", fmt="{:,.1f}", width=0.2)
+
+def add_dir(filenames: list[str], directory: str) -> list[str]:
+    return [directory+"/"+i for i in filenames]
+
+def create_neo4j_charts():
+    s3 = add_dir(["s3_bfsp_1_1.txt", "s3_dfspe_1_1.txt"], final_oz)
+    low_level = add_dir(["ll_bfs.txt", "ll_dfs.txt"], neo4j_dir)
+    traversal = add_dir(["traversal_bfs.txt", "traversal_dfs.txt"], neo4j_dir)
+    cypher = add_dir(["cypher.txt", "cypher.txt"], neo4j_dir)
+    file_names = add_dir(["neo4j_bfs_query.png", "neo4j_dfs_query.png"], image_dir)
+
+    for i in range(len(file_names)):
+        compare_n(low_level[i], traversal[i], cypher[i], s3[i], file_names[i])
+
+def compare_fabric(fabric: str, s3_oz_file: str, s3_general_file: str, image_file: str):
+    fabric_times = common.read_fabric_file(fabric)
+    s3_oz_times, _ = common.read_file(s3_oz_file)
+    s3_general_times, _ = common.read_file(s3_general_file)
+
+    labels = ["Q"+str(i) for i in range(1,8)]
+    values = {"Neo4J Fabric": list(), "S3 OZ": list(), "S3 General": list()}
+    for i in range(7):
+        fab_avg = avg(fabric_times[(20*i)+1:20*(i+1)])
+        values["Neo4J Fabric"].append(fab_avg)
+
+        s3_oz_avg = avg([res.time for res in s3_oz_times[20*i:20*(i+1)]])
+        values["S3 OZ"].append(s3_oz_avg)
+
+        s3_gen_avg = avg([res.time for res in s3_general_times[20*i:20*(i+1)]])
+        values["S3 General"].append(s3_gen_avg)
+
+    # TODO change title and stuff
+    common.chart(image_file, values, labels, width=0.22)
+
+def create_neo4j_fabric_charts():
+    s3_oz = add_dir(["s3_bfsp_1_1.txt", "s3_dfspe_1_1.txt"], final_oz)
+    s3_general = add_dir(["s3_bfsp_1_1.txt", "s3_dfspe_1_1.txt"], final_dir)
+    fabric = neo4j_fabric_dir + "/res_alternate.txt"
+    file_names = add_dir(["fabric_bfs_cmp.png", "fabric_dfs_cmp.png"], image_dir)
+
+    compare_fabric(fabric, s3_oz[0], s3_general[0], file_names[0])
+    compare_fabric(fabric, s3_oz[1], s3_general[1], file_names[1])
 
 def create_part_chart(bucket: str, algorithm: str):
     # On the x axis we want the parallelism and 
@@ -75,35 +147,9 @@ def create_distributed_chart():
         two_instances.append(common.sum_time(times)/p)
 
     times_dict = {"One Instance": one_instance, "Two Instances": two_instances}
-    chart(f"{image_dir}/distributed_large.png", times_dict, [str(i) for i in parallelisms],
+    common.chart(f"{image_dir}/distributed_large.png", times_dict, [str(i) for i in parallelisms],
           scale="linear", ylim_low = 0, ylim_high=50, xlabel="Parallelism", 
           ylabel="Running time Seconds", title="Total running time SF-10 BFS")
-
-def chart(name: str, times: dict[str, list[int]], types: list[str], 
-          scale: str = "log", ylim_low: int = None, ylim_high: int = None,
-          legend_loc: str = "upper right", xlabel: str = "Queries", 
-          title:str = "Average time", ylabel: str= "Running time milliseconds"):
-    x = np.arange(len(types))
-    width = 0.25
-    mult = 0
-
-    _, ax = plt.subplots(layout='constrained')
-    for fs, time_array in times.items():
-        offset = width*mult
-        rects = ax.bar(x+offset, time_array, width, label=fs)
-        ax.bar_label(rects, fmt='{:,.0f}', padding=3, rotation='vertical')
-        mult += 1
-
-    ax.set_ylabel(ylabel)
-    ax.set_xlabel(xlabel)
-    ax.set_title(title)
-    ax.set_xticks(x+width, types)
-    ax.legend(loc=legend_loc, ncols=1)
-    if ylim_low is not None:
-        plt.ylim(ylim_low, ylim_high)
-    plt.yscale(scale)
-    plt.savefig(name)
-    plt.close()
 
 def create_onezone_charts():
     parallelism = 1
@@ -126,7 +172,7 @@ def create_onezone_charts():
             times["General"].append(common.avg(general[20*i:20*(i+1)]))
             times["One-Zone"].append(common.avg(oz[20*i:20*(i+1)]))
 
-        chart(f"{image_dir}/{algo}_cmp_oz.png", times, labels, 
+        common.chart(f"{image_dir}/{algo}_cmp_oz.png", times, labels, 
               title=f"Average time ({algo})",
               ylim_low=1, ylim_high=1_000_000)
 
@@ -145,7 +191,7 @@ def create_parallelism_charts():
         else:
             raise AssertionError()
 
-    chart(f"{image_dir}/parallelism.png", times_dict, 
+    common.chart(f"{image_dir}/parallelism.png", times_dict, 
           [str(i) for i in parallelisms], scale="linear", ylim_low=0, ylim_high=80,
           xlabel="Parallelism", ylabel="Wall clock time (seconds)",
           title="Workload running time")
@@ -202,7 +248,7 @@ def create_baseline_comparison():
             for i in range(7):
                 times["Final"].append(common.avg(final[20*i:20*(i+1)]))
 
-            chart(f"{image_dir}/{algo}_cmp_{sf}.png", times, labels, 
+            common.chart(f"{image_dir}/{algo}_cmp_{sf}.png", times, labels, 
                   title=f"Average time ({algo}) SF-{sf}",
                   ylim_low=1, ylim_high=1_000_000)
 
@@ -213,7 +259,9 @@ def main():
     # create_parallelism_charts()
     # create_onezone_charts()
     # create_part_chart("general", "bfsp")
-    create_distributed_chart()
+    # create_distributed_chart()
+    create_neo4j_charts()
+    create_neo4j_fabric_charts()
 
 if __name__ == "__main__":
     main()

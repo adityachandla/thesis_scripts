@@ -145,6 +145,5 @@ def main():
     compare_neo4j()
     compare_gds()
 
-
 if __name__ == "__main__":
     main()
