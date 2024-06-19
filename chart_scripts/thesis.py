@@ -9,12 +9,25 @@ final_dir = "../data/final/lastImpl/general"
 final_oz = "../data/final/lastImpl/onezone"
 neo4j_dir = "../data/neo4jData"
 neo4j_fabric_dir = "../data/neo4jFabricData"
+flink_dir = "../data/flinkRunningTimes"
 
 dist_dir = "../data/final"
 
 old_dir = "../data/phase2ParallelPrefetchOZ"
 image_dir = "../images/thesis_images"
 part_base_dir = "../data/partTest"
+
+def create_flink_charts():
+    flink = common.read_flink_file(f"{flink_dir}/running_time_rep1.csv")
+    s3, _ = common.read_file(f"{final_dir}/s3_bfsp_1_1.txt")
+    labels = [f"{i}-Hop" for i in range(1,5)]
+    values = {"Apache Flink": [], "S3 General": []}
+    for i in range(1, 5):
+        values["S3 General"].append(common.avg(s3[40*(i-1):40*i])/1000)
+        values["Apache Flink"].append(flink[i-1].timeSeconds)
+    common.chart(f"{image_dir}/flink_cmp.png", values, labels, ylim_low = 0.01,
+                 ylim_high=10_000, xlabel="Num Hops", ylabel="Running time (seconds)",
+                 fmt="{:,.1f}") 
 
 def avg(l: list[float]) -> float:
     return sum(l)/len(l)
@@ -75,7 +88,7 @@ def compare_fabric(fabric: str, s3_oz_file: str, s3_general_file: str, image_fil
         values["S3 General"].append(s3_gen_avg)
 
     # TODO change title and stuff
-    common.chart(image_file, values, labels, width=0.22)
+    common.chart(image_file, values, labels, width=0.22, ylim_low = 0.1, ylim_high=100_000)
 
 def create_neo4j_fabric_charts():
     s3_oz = add_dir(["s3_bfsp_1_1.txt", "s3_dfspe_1_1.txt"], final_oz)
@@ -260,8 +273,9 @@ def main():
     # create_onezone_charts()
     # create_part_chart("general", "bfsp")
     # create_distributed_chart()
-    create_neo4j_charts()
-    create_neo4j_fabric_charts()
+    # create_neo4j_charts()
+    # create_neo4j_fabric_charts()
+    create_flink_charts()
 
 if __name__ == "__main__":
     main()

@@ -22,6 +22,11 @@ class QueryResult:
     results: int
 
 @dataclass
+class QueryResultFlink:
+    hops: int
+    timeSeconds: int
+
+@dataclass
 class Stats:
     S3Fetches: int
     cacheHits: int
@@ -40,6 +45,15 @@ def sum_time(l: list[QueryResult]) -> float:
     for qr in l:
         s += qr.time
     return s/1000
+
+def mapLine(line:str) -> QueryResultFlink:
+    splits = line.strip().split(',')
+    return QueryResultFlink(int(splits[0]), int(splits[1]))
+
+def read_flink_file(name: str) -> list[QueryResultFlink]:
+    with open(name, "r") as f:
+        lines = f.read().strip().split('\n')
+    return [mapLine(line) for line in lines[1:]]
 
 def read_file(name: str) -> (list[QueryResult], list[Stats]):
     with open(name) as f:
